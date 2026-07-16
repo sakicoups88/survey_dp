@@ -1,0 +1,878 @@
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap">
+<div id="app"></div>
+
+<style>
+  #app, #app * { box-sizing: border-box; }
+  #app {
+    --bg: #FDF4F8;
+    --bg-dot: #FBE7F0;
+    --surface: #FFFFFF;
+    --ink: #4A3552;
+    --ink-soft: #93809B;
+    --ink-faint: #CBB9D2;
+    --teal: #FF7CA3;
+    --teal-deep: #F2467F;
+    --teal-tint: #FFE7EF;
+    --mint: #5FD6C0;
+    --mint-tint: #E2FBF5;
+    --rose: #E2624D;
+    --rose-tint: #FDEAE4;
+    --line: #F4DCE9;
+    --sand: #FFF1D6;
+    --radius: 22px;
+    font-family: "Zen Maru Gothic","Noto Sans JP",-apple-system,sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 8px 8px, var(--bg-dot) 2.5px, transparent 2.5px) 0 0/28px 28px,
+      var(--bg);
+    min-height: 100%;
+    padding: 32px 16px 60px;
+    line-height: 1.75;
+  }
+  #app h1, #app h2, #app h3 {
+    font-family: "Zen Maru Gothic","Noto Sans JP",sans-serif;
+    font-weight: 900;
+    margin: 0 0 10px;
+    letter-spacing: .02em;
+    color: var(--teal-deep);
+  }
+  #app h1 { font-size: 22px; line-height: 1.4; }
+  #app h2 { font-size: 19px; line-height: 1.4; }
+  #app h3 { font-size: 16px; }
+  .shell { max-width: 620px; margin: 0 auto; }
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 2px solid var(--line);
+    padding: 28px 26px;
+    box-shadow: 0 6px 0 var(--line), 0 10px 24px rgba(242,70,127,.08);
+  }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: .14em;
+    color: var(--teal-deep);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .lede { color: var(--ink-soft); font-size: 14.5px; margin-bottom: 18px; }
+  /* stepper */
+  .stepper { display:flex; align-items:center; gap:6px; max-width:620px; margin:0 auto 22px; padding:0 2px; }
+  .step-dot {
+    width: 26px; height: 26px; border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 11.5px; font-weight:700; flex-shrink:0;
+    background: var(--surface); border: 1.5px solid var(--line); color: var(--ink-faint);
+    transition: all .25s;
+  }
+  .step-dot.done { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .step-dot.active { border-color: var(--teal); color: var(--teal-deep); background: var(--teal-tint); }
+  .step-line { flex:1; height:1.5px; background: var(--line); }
+  .step-line.done { background: var(--teal); }
+  .step-label { text-align:center; font-size:11.5px; color:var(--ink-faint); max-width:620px; margin:0 auto 20px; }
+
+  button { font-family: inherit; cursor: pointer; }
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    background: var(--teal); color:#fff; border:none; border-radius: 999px;
+    padding: 12px 26px; font-size: 14.5px; font-weight:700; letter-spacing:.02em;
+    transition: background .2s, transform .1s;
+  }
+  .btn:hover { background: var(--teal-deep); }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { background: var(--ink-faint); cursor:not-allowed; }
+  .btn.ghost {
+    background: transparent; color: var(--ink-soft); border: 1.5px solid var(--line);
+  }
+  .btn.ghost:hover { border-color: var(--teal); color: var(--teal-deep); background:transparent; }
+  .row-btns { display:flex; justify-content:space-between; align-items:center; margin-top:24px; gap:10px; }
+
+  fieldset { border:none; padding:0; margin:0 0 22px; }
+  legend { font-weight:700; font-size:15px; margin-bottom:10px; padding:0; }
+  .req { color: var(--rose); font-weight:700; }
+  .opt-grid { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip {
+    border: 1.5px solid var(--line); border-radius: 999px; padding: 9px 16px;
+    font-size: 13.5px; background: var(--surface); color: var(--ink);
+    transition: all .15s; user-select:none;
+  }
+  .chip:hover { border-color: var(--teal); }
+  .chip.selected { background: var(--teal); border-color: var(--teal); color:#fff; font-weight:700; }
+  .chip.selected.rose { background: var(--rose); border-color: var(--rose); }
+  .stack { display:flex; flex-direction:column; gap:8px; }
+  .radio-row {
+    display:flex; align-items:center; gap:10px; border:1.5px solid var(--line); border-radius:16px;
+    padding: 12px 15px; font-size:14px; transition: all .15s;
+  }
+  .radio-row:hover { border-color: var(--teal); }
+  .radio-row.selected { border-color: var(--teal); background: var(--teal-tint); font-weight:700; }
+  .radio-row input, .chip-input { display:none; }
+  input[type=text], input[type=number], textarea, select {
+    width:100%; border:1.5px solid var(--line); border-radius:14px; padding:11px 14px;
+    font-size:14px; font-family:inherit; color:var(--ink); background:#fff;
+  }
+  textarea { resize:vertical; min-height:90px; }
+  input:focus, textarea:focus, select:focus { outline:2px solid var(--teal); outline-offset:1px; border-color:var(--teal); }
+  .free-inline { margin-top:8px; }
+
+  /* phone mock */
+  .phone { max-width: 340px; margin: 0 auto 18px; background: var(--surface); border-radius: 28px;
+    border: 2px solid var(--line); overflow:hidden; box-shadow: 0 10px 0 var(--teal-tint), 0 14px 26px rgba(242,70,127,.12); }
+  .phone-bar { background: var(--teal-deep); color:#fff; font-size:11px; padding:7px 16px; display:flex; justify-content:space-between; font-weight:700; letter-spacing:.03em; }
+  .post { padding:18px; }
+  .post-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .avatar { width:36px; height:36px; border-radius:50%; background:var(--teal-tint); color:var(--teal-deep);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0; }
+  .photo-tile { width:120px; height:120px; margin:2px auto 6px; border-radius:20px; background:var(--teal-tint);
+    display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .photo-caption { text-align:center; font-size:11.5px; color:var(--ink-faint); font-style:italic; margin-bottom:10px; }
+  .media-box { background: var(--teal-tint); border-radius:16px; padding:12px 14px; margin-bottom:10px; }
+  .media-tag { font-size:11px; font-weight:700; color:var(--teal-deep); letter-spacing:.05em; margin-bottom:5px; }
+  .media-desc { font-size:12.5px; color: var(--ink-soft); font-style:italic; }
+  .post-name { font-weight:700; font-size:14px; }
+  .post-meta { font-size:11.5px; color:var(--ink-faint); }
+  .post-body { font-size:14.5px; margin-bottom:6px; }
+  .divider { height:1px; background: var(--line); margin: 4px 0 10px; }
+  .comment { display:flex; gap:9px; padding:8px 0; opacity:0; transform:translateY(6px);
+    animation: fadeUp .45s forwards; }
+  @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+  .comment .avatar { width:28px; height:28px; font-size:11px; background:var(--rose-tint); color:var(--rose); }
+  .comment-bubble { background: var(--rose-tint); border-radius: 16px; padding: 9px 13px; font-size:13.5px; color:#7A3225; }
+  .comment-name { font-size:11.5px; font-weight:700; color:var(--ink-soft); margin-bottom:2px; }
+  .reveal-btn { display:block; margin: 6px auto 0; }
+
+  .scale-row { display:flex; justify-content:space-between; gap:6px; margin-top:6px; }
+  .scale-opt { flex:1; text-align:center; border:1.5px solid var(--line); border-radius:14px; padding:10px 4px; font-size:12.5px; }
+  .scale-opt.selected { border-color: var(--teal); background:var(--teal-tint); font-weight:700; color:var(--teal-deep); }
+  .scale-caption { display:flex; justify-content:space-between; font-size:11px; color:var(--ink-faint); margin-top:4px; }
+
+  .summary-block { border-top:1px solid var(--line); padding-top:12px; margin-top:12px; }
+  .summary-block:first-child { border-top:none; padding-top:0; margin-top:0; }
+  .summary-label { font-size:11.5px; color: var(--teal-deep); font-weight:700; letter-spacing:.05em; margin-bottom:3px; }
+  .summary-val { font-size:14px; color: var(--ink); }
+
+  .footer-link { text-align:center; margin-top:26px; font-size:12px; color: var(--ink-faint); }
+  .footer-link a { color: var(--ink-faint); text-decoration: underline; cursor:pointer; }
+
+  .admin-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
+  .badge { background: var(--teal-tint); color: var(--teal-deep); font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; }
+  .toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff;
+    padding:10px 20px; border-radius:999px; font-size:13px; opacity:0; transition:opacity .3s; pointer-events:none; z-index:50; }
+  .toast.show { opacity:1; }
+
+  /* ---- mobile tuning ---- */
+  @media (max-width: 480px) {
+    #app { padding: 20px 12px 56px; }
+    .card { padding: 20px 16px; border-radius: 18px; }
+    #app h1 { font-size: 19px; }
+    #app h2 { font-size: 17px; }
+    .lede { font-size: 13.5px; }
+    .stepper { gap: 4px; }
+    .step-dot { width: 22px; height: 22px; font-size: 10.5px; }
+    .row-btns { gap: 8px; }
+    .btn { padding: 12px 18px; font-size: 14px; flex: 1; }
+    .btn.ghost { flex: 0 0 auto; }
+    .chip { padding: 10px 14px; font-size: 13px; }
+    .radio-row { padding: 13px 14px; }
+    .scale-row { gap: 4px; }
+    .scale-opt { font-size: 11px; padding: 10px 2px; }
+    .phone { max-width: 100%; }
+    .photo-tile { width: 100px; height: 100px; }
+  }
+</style>
+
+<script>
+(function(){
+  const root = document.getElementById('app');
+
+  // ---------- data ----------
+  const EMOTIONS = ["怒り","悲しみ","不安","もやもや","無力感","共感","困惑","特に何も感じない"];
+
+  const OBSERVER_ACTIONS = [
+    "運営に通報する",
+    "コメントで注意する・やめるよう伝える",
+    "被害者に励ましのメッセージを送る",
+    "好意的なリアクション（いいね等）で味方を示す",
+    "そのまま見過ごす（関わらない）",
+    "その場を離れる（アプリを閉じる）",
+    "その他"
+  ];
+
+  const SELF_ACTIONS = [
+    "すぐに投稿を削除する",
+    "コメントを非表示にする／ブロックする",
+    "運営に通報する",
+    "言い返す・反論する",
+    "友人や家族に相談する",
+    "何もせず様子を見る",
+    "そのSNSから距離を置く",
+    "その他"
+  ];
+
+  const OWN_HABITS = [
+    "ミュート機能を使う",
+    "ブロックする",
+    "運営に通報する",
+    "コメント欄をオフにする",
+    "攻撃的な投稿をするアカウントをフォローしない",
+    "反論する・言い返す",
+    "特に対策していない",
+    "その他"
+  ];
+
+  const SIM_A = [
+    {
+      tag: "国際大会・敗退のケース（※登場人物は架空です）",
+      name: "拓也（架空の代表選手）", init: "選",
+      meta: "試合直後",
+      body: "準々決勝で負けてしまいました。応援してくれた皆さん、力になれずすみません。次に向けてまた頑張ります。",
+      comments: [
+        { name:"匿名ユーザー", text:"税金使って結果これ?" },
+        { name:"匿名ユーザー", text:"代表の資格ないでしょ" },
+        { name:"匿名ユーザー", text:"見てるこっちが恥ずかしい" }
+      ]
+    },
+    {
+      tag: "容姿の変化をめぐるケース（※登場人物は架空です）",
+      name: "架空のタレント・美咲", init: "美",
+      photoCaption: "（写真：少しふっくらした女性アイドルのイメージ）",
+      illustrated: true,
+      meta: "5分前",
+      body: "お久しぶりです！ひさびさに近況報告のライブ配信をします。",
+      comments: [
+        { name:"匿名ユーザー", text:"え、太った?誰かわからなかった" },
+        { name:"匿名ユーザー", text:"昔の方が全然良かったのに" },
+        { name:"匿名ユーザー", text:"自己管理できてなさすぎ" }
+      ]
+    },
+    {
+      tag: "迷惑行為の炎上ケース（※登場人物は架空です）",
+      name: "るい（仮名アカウント）", init: "る",
+      meta: "拡散されて1時間",
+      mediaLabel: "（動画）",
+      mediaDescription: "深夜のコンビニで、陳列棚の商品を勝手に並べ替えたり床に転がしたりして遊ぶ様子を自分で撮影し、本人のアカウントから投稿した動画という設定です。",
+      body: "警察沙汰になりそうで草www",
+      comments: [
+        { name:"匿名ユーザー", text:"顔と名前特定して晒そう" },
+        { name:"匿名ユーザー", text:"勤務先に連絡した方がいい" },
+        { name:"匿名ユーザー", text:"人間性終わってるでしょこれ" }
+      ]
+    }
+  ];
+
+  const SIM_B = {
+    name: "あなた", init: "You",
+    meta: "たった今",
+    body: "最近始めた趣味の絵、描いてみました。どうでしょうか？",
+    comments: [
+      { name:"匿名ユーザー", text:"下手すぎ、才能ないよ" },
+      { name:"匿名ユーザー", text:"こんなの誰得?" },
+      { name:"匿名ユーザー", text:"見てて恥ずかしくなるレベル" }
+    ]
+  };
+
+  const STEPS = ["基本情報","疑似体験A","疑似体験B","意識と行動","確認","完了"];
+
+  // ---------- state ----------
+  let state = {
+    step: -1, // -1 = intro, 0..4 survey steps, 5 = thanks
+    consent: false,
+    admin: false,
+    simAIndex: 0,
+    revealed: {}, // key -> bool
+    basic: { gender:"", age:"", sns:[], freq:"", freqOther:"" },
+    simA: [ {emotions:[], action:"", actionFree:""}, {emotions:[], action:"", actionFree:""}, {emotions:[], action:"", actionFree:""} ],
+    simB: { emotions:[], action:"", actionFree:"" },
+    interview: { concern:0, habits:[], free:"" }
+  };
+
+  function toast(msg){
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(()=>t.classList.add('show'));
+    setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 2200);
+  }
+
+  function toggleInArray(arr, val){
+    const i = arr.indexOf(val);
+    if(i>-1) arr.splice(i,1); else arr.push(val);
+  }
+
+  // ---------- render dispatch ----------
+  function render(){
+    let html = "";
+    if(state.admin){ html = renderAdmin(); }
+    else if(state.step === -1){ html = renderIntro(); }
+    else if(state.step === 0){ html = renderBasic(); }
+    else if(state.step === 1){ html = renderSimA(); }
+    else if(state.step === 2){ html = renderSimB(); }
+    else if(state.step === 3){ html = renderInterview(); }
+    else if(state.step === 4){ html = renderConfirm(); }
+    else if(state.step === 5){ html = renderThanks(); }
+    root.innerHTML = html;
+    attachHandlers();
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+
+  function stepper(activeIdx){
+    let dots = "";
+    for(let i=0;i<STEPS.length-1;i++){
+      const cls = i<activeIdx ? "done" : (i===activeIdx ? "active" : "");
+      dots += `<div class="step-dot ${cls}">${i<activeIdx?"✓":i+1}</div>`;
+      if(i < STEPS.length-2){
+        dots += `<div class="step-line ${i<activeIdx?"done":""}"></div>`;
+      }
+    }
+    return `<div class="stepper">${dots}</div><div class="step-label">${STEPS[activeIdx]}（${activeIdx+1}／${STEPS.length-1}）</div>`;
+  }
+
+  // ---------- screens ----------
+  function renderIntro(){
+    return `
+    <div class="shell">
+      <div class="card">
+        <h1>SNS上の誹謗中傷に関する意識調査</h1>
+        <p class="lede">
+          この調査は卒業研究の一環として実施するものです。以下の内容に同意いただける場合のみ、回答を開始してください。
+        </p>
+        <ul style="font-size:13.5px; color:var(--ink-soft); margin:0 0 18px; padding-left:20px; line-height:1.9;">
+          <li>回答は匿名であり、研究目的以外には使用しません。</li>
+          <li>回答は任意です。回答の途中でいつでも中断できます。</li>
+          <li>収集したデータは、学会発表や学位論文にのみ使用します。</li>
+          <li>疑似体験に登場する投稿・コメントは、すべて調査用に作成した架空のものです。</li>
+        </ul>
+
+        <label class="radio-row ${state.consent?"selected":""}">
+          <input type="checkbox" data-consent-checkbox ${state.consent?"checked":""}/>
+          上記の内容に同意し、回答を開始します。
+        </label>
+
+        <div class="row-btns" style="justify-content:flex-end; margin-top:20px;">
+          <button class="btn" data-action="start" ${state.consent?"":"disabled"}>回答をはじめる</button>
+        </div>
+      </div>
+      <div class="footer-link"><a data-action="admin-open">調査担当者の方はこちら（回答結果の確認）</a></div>
+    </div>`;
+  }
+
+  function renderBasic(){
+    const b = state.basic;
+    const snsList = ["X（Twitter）","Instagram","TikTok","YouTube","LINE","Facebook","Threads","その他"];
+    const chip = (val,arr)=> arr.includes(val)?"selected":"";
+    return `
+    <div class="shell">
+      ${stepper(0)}
+      <div class="card">
+        <h2>基本情報</h2>
+        <p class="lede">まずは回答者の方について、簡単に教えてください。</p>
+
+        <fieldset>
+          <legend>性別 <span class="req">必須</span></legend>
+          <div class="stack">
+            ${["女性","男性","その他","回答しない"].map(v=>`
+              <label class="radio-row ${b.gender===v?"selected":""}" data-radio="gender" data-val="${v}">
+                <input type="radio" name="gender" ${b.gender===v?"checked":""}/> ${v}
+              </label>`).join("")}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>年齢 <span class="req">必須</span></legend>
+          <input type="number" min="0" max="120" placeholder="例：24" data-text="age" value="${escapeAttr(b.age)}" style="max-width:140px;"/>
+        </fieldset>
+
+        <fieldset>
+          <legend>よく利用するSNS（複数選択可） <span class="req">必須</span></legend>
+          <div class="opt-grid">
+            ${snsList.map(v=>`<button type="button" class="chip ${chip(v,b.sns)}" data-toggle="sns" data-val="${v}">${v}</button>`).join("")}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>SNSの利用頻度（1日あたりの利用時間） <span class="req">必須</span></legend>
+          <div class="stack">
+            ${["1日に30分以内","1日に1時間以内","1日に2時間以内","1日に2時間以上","使用しない","その他"].map(v=>`
+              <label class="radio-row ${b.freq===v?"selected":""}" data-radio="freq" data-val="${v}">
+                <input type="radio" name="freq" ${b.freq===v?"checked":""}/> ${v}
+              </label>`).join("")}
+          </div>
+          ${b.freq==="その他" ? `<div class="free-inline"><input type="text" placeholder="具体的に…" data-text="freqOther" value="${escapeAttr(b.freqOther)}"/></div>` : ""}
+        </fieldset>
+
+        <div class="row-btns">
+          <button class="btn ghost" data-action="back">戻る</button>
+          <button class="btn" data-action="next" ${basicValid()?"":"disabled"}>次へ</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  function basicValid(){
+    const b = state.basic;
+    if(!(b.gender && String(b.age).trim() !== "" && b.sns.length>0 && b.freq)) return false;
+    if(b.freq==="その他" && !String(b.freqOther||"").trim()) return false;
+    return true;
+  }
+
+  function idolAvatarSVG(size){
+    return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="48" fill="#FFE7EF"/>
+      <path d="M18 42 Q50 8 82 42 Q80 20 50 18 Q20 20 18 42 Z" fill="#5A3D2B"/>
+      <ellipse cx="50" cy="58" rx="32" ry="28" fill="#FFD9CF"/>
+      <circle cx="37" cy="56" r="4" fill="#4A3552"/>
+      <circle cx="63" cy="56" r="4" fill="#4A3552"/>
+      <circle cx="28" cy="64" r="6" fill="#FF9FB4" opacity="0.6"/>
+      <circle cx="72" cy="64" r="6" fill="#FF9FB4" opacity="0.6"/>
+      <path d="M40 70 Q50 78 60 70" stroke="#4A3552" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="50" cy="16" r="6" fill="#FF7CA3"/>
+    </svg>`;
+  }
+
+  function phoneCard(scenario, key, revealed){
+    let commentsHtml = "";
+    if(revealed){
+      commentsHtml = scenario.comments.map((c,i)=>`
+        <div class="comment" style="animation-delay:${i*0.35}s">
+          <div class="avatar">?</div>
+          <div>
+            <div class="comment-name">${c.name}</div>
+            <div class="comment-bubble">${c.text}</div>
+          </div>
+        </div>`).join("");
+    } else {
+      commentsHtml = `<button type="button" class="btn ghost reveal-btn" data-reveal="${key}">コメントを見る</button>`;
+    }
+    return `
+    <div class="phone">
+      <div class="phone-bar"><span>SNS（シミュレーション）</span><span>●●●</span></div>
+      <div class="post">
+        <div class="post-head">
+          <div class="avatar" ${scenario.illustrated?'style="background:transparent;overflow:hidden;"':''}>${scenario.illustrated ? idolAvatarSVG(36) : scenario.init}</div>
+          <div>
+            <div class="post-name">${scenario.name}</div>
+            <div class="post-meta">${scenario.meta}</div>
+          </div>
+        </div>
+        ${scenario.illustrated ? `
+          <div class="photo-tile">${idolAvatarSVG(100)}</div>
+          <div class="photo-caption">${scenario.photoCaption}</div>
+        ` : ""}
+        ${scenario.mediaLabel ? `
+          <div class="media-box">
+            <div class="media-tag">▶ ${scenario.mediaLabel}</div>
+            <div class="media-desc">${scenario.mediaDescription}</div>
+          </div>
+        ` : ""}
+        <div class="post-body">${scenario.body}</div>
+        <div class="divider"></div>
+        ${commentsHtml}
+      </div>
+    </div>`;
+  }
+
+  function renderSimA(){
+    const idx = state.simAIndex;
+    const scenario = SIM_A[idx];
+    const key = "A"+idx;
+    const revealed = !!state.revealed[key];
+    const data = state.simA[idx];
+    const chip = (val,arr)=> arr.includes(val)?"selected":"";
+    return `
+    <div class="shell">
+      ${stepper(1)}
+      <div class="card">
+        <div class="eyebrow">疑似体験 ${idx+1}／${SIM_A.length}・他人への誹謗中傷を見る</div>
+        <h2>この投稿とコメントを見てください</h2>
+        <p class="lede">${scenario.tag}。登場人物や投稿はすべて調査用に作成した架空のものです。</p>
+
+        ${phoneCard(scenario, key, revealed)}
+
+        ${revealed ? `
+        <fieldset style="margin-top:22px;">
+          <legend>これを見て、どんな感情になりましたか？（複数選択可） <span class="req">必須</span></legend>
+          <div class="opt-grid">
+            ${EMOTIONS.map(v=>`<button type="button" class="chip ${chip(v,data.emotions)}" data-toggle="simA-emo" data-val="${v}">${v}</button>`).join("")}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>あなたなら、この状況でどう行動しますか？ <span class="req">必須</span></legend>
+          <div class="stack">
+            ${OBSERVER_ACTIONS.map(v=>`
+              <label class="radio-row ${data.action===v?"selected":""}" data-radio="simA-action" data-val="${v}">
+                <input type="radio" name="simA-action" ${data.action===v?"checked":""}/> ${v}
+              </label>`).join("")}
+          </div>
+          ${data.action==="その他" ? `<div class="free-inline"><input type="text" placeholder="具体的に…" data-text="simA-actionFree" value="${escapeAttr(data.actionFree)}"/></div>` : ""}
+        </fieldset>` : ""}
+
+        <div class="row-btns">
+          <button class="btn ghost" data-action="back">戻る</button>
+          <button class="btn" data-action="next" ${simAValid(idx)?"":"disabled"}>次へ</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  function simAValid(idx){
+    const d = state.simA[idx];
+    if(!state.revealed["A"+idx]) return false;
+    if(d.emotions.length===0 || !d.action) return false;
+    if(d.action==="その他" && !d.actionFree.trim()) return false;
+    return true;
+  }
+
+  function renderSimB(){
+    const key = "B0";
+    const revealed = !!state.revealed[key];
+    const data = state.simB;
+    const chip = (val,arr)=> arr.includes(val)?"selected":"";
+    return `
+    <div class="shell">
+      ${stepper(2)}
+      <div class="card">
+        <div class="eyebrow">疑似体験・自分が誹謗中傷される</div>
+        <h2>今度は、あなた自身の投稿という設定です</h2>
+        <p class="lede">下の投稿は「あなた」が投稿したという想定で、寄せられたコメントを見てください。</p>
+
+        ${phoneCard(SIM_B, key, revealed)}
+
+        ${revealed ? `
+        <fieldset style="margin-top:22px;">
+          <legend>もし自分がこう言われたら、どんな感情になりますか？（複数選択可） <span class="req">必須</span></legend>
+          <div class="opt-grid">
+            ${EMOTIONS.map(v=>`<button type="button" class="chip ${chip(v,data.emotions)}" data-toggle="simB-emo" data-val="${v}">${v}</button>`).join("")}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>あなたなら、この後どう行動しますか？ <span class="req">必須</span></legend>
+          <div class="stack">
+            ${SELF_ACTIONS.map(v=>`
+              <label class="radio-row ${data.action===v?"selected":""}" data-radio="simB-action" data-val="${v}">
+                <input type="radio" name="simB-action" ${data.action===v?"checked":""}/> ${v}
+              </label>`).join("")}
+          </div>
+          ${data.action==="その他" ? `<div class="free-inline"><input type="text" placeholder="具体的に…" data-text="simB-actionFree" value="${escapeAttr(data.actionFree)}"/></div>` : ""}
+        </fieldset>` : ""}
+
+        <div class="row-btns">
+          <button class="btn ghost" data-action="back">戻る</button>
+          <button class="btn" data-action="next" ${simBValid()?"":"disabled"}>次へ</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  function simBValid(){
+    const d = state.simB;
+    if(!state.revealed["B0"]) return false;
+    if(d.emotions.length===0 || !d.action) return false;
+    if(d.action==="その他" && !d.actionFree.trim()) return false;
+    return true;
+  }
+
+  function renderInterview(){
+    const d = state.interview;
+    const chip = (val,arr)=> arr.includes(val)?"selected":"";
+    const scaleLabels = ["1","2","3","4","5"];
+    return `
+    <div class="shell">
+      ${stepper(3)}
+      <div class="card">
+        <h2>誹謗中傷への意識と、ふだんの行動</h2>
+        <p class="lede">最後に、日頃の意識や行動について教えてください。</p>
+
+        <fieldset>
+          <legend>SNS上の誹謗中傷は、社会的な問題だと思いますか？ <span class="req">必須</span></legend>
+          <div class="scale-row">
+            ${scaleLabels.map(v=>`<div class="scale-opt ${d.concern==v?"selected":""}" data-scale="${v}">${v}</div>`).join("")}
+          </div>
+          <div class="scale-caption"><span>全くそう思わない</span><span>非常にそう思う</span></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>ふだん、誹謗中傷を防ぐために行っていること（複数選択可） <span class="req">必須</span></legend>
+          <div class="opt-grid">
+            ${OWN_HABITS.map(v=>`<button type="button" class="chip ${chip(v,d.habits)}" data-toggle="habits" data-val="${v}">${v}</button>`).join("")}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>誹謗中傷について、日頃感じていることや経験があれば教えてください（任意）</legend>
+          <textarea data-text="free" placeholder="自由にご記入ください">${escapeHtml(d.free)}</textarea>
+        </fieldset>
+
+        <div class="row-btns">
+          <button class="btn ghost" data-action="back">戻る</button>
+          <button class="btn" data-action="next" ${interviewValid()?"":"disabled"}>確認画面へ</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  function interviewValid(){
+    const d = state.interview;
+    return d.concern>0 && d.habits.length>0;
+  }
+
+  function renderConfirm(){
+    const b = state.basic, ia = state.simA, ib = state.simB, iv = state.interview;
+    return `
+    <div class="shell">
+      ${stepper(4)}
+      <div class="card">
+        <h2>回答内容の確認</h2>
+        <p class="lede">この内容で送信します。よろしければ「回答を送信する」を押してください。</p>
+
+        <div class="summary-block">
+          <div class="summary-label">基本情報</div>
+          <div class="summary-val">${b.gender}／${b.age}／利用SNS：${b.sns.join("、")}／頻度：${b.freq}${b.freq==="その他"&&b.freqOther?"（"+escapeHtml(b.freqOther)+"）":""}</div>
+        </div>
+        <div class="summary-block">
+          <div class="summary-label">疑似体験A（他人への誹謗中傷）</div>
+          <div class="summary-val">
+            ${ia.map((d,i)=>`シナリオ${i+1}｜感情：${d.emotions.join("、")}／行動：${d.action}${d.action==="その他"?"（"+d.actionFree+"）":""}`).join("<br/>")}
+          </div>
+        </div>
+        <div class="summary-block">
+          <div class="summary-label">疑似体験B（自分が誹謗中傷される）</div>
+          <div class="summary-val">感情：${ib.emotions.join("、")}／行動：${ib.action}${ib.action==="その他"?"（"+ib.actionFree+"）":""}</div>
+        </div>
+        <div class="summary-block">
+          <div class="summary-label">意識と行動</div>
+          <div class="summary-val">問題意識：${iv.concern}／5　実施している対策：${iv.habits.join("、")}${iv.free?"<br/>自由記述："+escapeHtml(iv.free):""}</div>
+        </div>
+
+        <div class="row-btns">
+          <button class="btn ghost" data-action="back">戻る</button>
+          <button class="btn" data-action="submit">回答を送信する</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function renderThanks(){
+    return `
+    <div class="shell">
+      <div class="card" style="text-align:center;">
+        <div class="eyebrow">送信完了</div>
+        <h2>ご協力ありがとうございました</h2>
+        <p class="lede">回答は匿名で記録され、研究目的の集計にのみ使用します。</p>
+        <button class="btn ghost" data-action="restart">もう一度回答する（別の方の回答用）</button>
+      </div>
+    </div>`;
+  }
+
+  // ---------- admin ----------
+  let adminData = null;
+  function renderAdmin(){
+    if(adminData === null){
+      loadAdminData();
+      return `<div class="shell"><div class="card"><p class="lede">読み込み中…</p></div></div>`;
+    }
+    const n = adminData.length;
+    const concernAvg = n ? (adminData.reduce((s,r)=>s+(r.interview.concern||0),0)/n).toFixed(2) : "–";
+    return `
+    <div class="shell">
+      <div class="card">
+        <div class="eyebrow">調査担当者ビュー</div>
+        <h2>回答結果</h2>
+        <p class="lede">この画面のデータは、全ユーザーの回答を集計した共有データです。</p>
+        <div class="admin-row"><span>総回答数</span><span class="badge">${n} 件</span></div>
+        <div class="admin-row"><span>問題意識の平均スコア（5点満点）</span><span class="badge">${concernAvg}</span></div>
+        <div class="row-btns" style="margin-top:18px;">
+          <button class="btn ghost" data-action="admin-close">アンケート画面に戻る</button>
+          <button class="btn" data-action="admin-csv" ${n?"":"disabled"}>CSVをダウンロード</button>
+        </div>
+      </div>
+      <div class="footer-link"><a data-action="admin-refresh">再読み込み</a></div>
+    </div>`;
+  }
+
+  async function loadAdminData(){
+    try{
+      const list = await window.storage.list("responses:", true);
+      const keys = (list && list.keys) ? list.keys : [];
+      const rows = [];
+      for(const k of keys){
+        try{
+          const r = await window.storage.get(k, true);
+          if(r && r.value) rows.push(JSON.parse(r.value));
+        }catch(e){ /* skip unreadable entry */ }
+      }
+      adminData = rows;
+    }catch(e){
+      adminData = [];
+      toast("データの取得に失敗しました");
+    }
+    render();
+  }
+
+  function toCsv(rows){
+    const simACount = SIM_A.length;
+    const headers = ["timestamp","gender","age","sns","freq"];
+    for(let i=0;i<simACount;i++){ headers.push("simA"+(i+1)+"_emotions", "simA"+(i+1)+"_action"); }
+    headers.push("simB_emotions","simB_action","concern","habits","free");
+    const esc = v => `"${String(v==null?"":v).replace(/"/g,'""')}"`;
+    const lines = [headers.join(",")];
+    rows.forEach(r=>{
+      const row = [r.timestamp, r.basic.gender, r.basic.age, r.basic.sns.join("/"), r.basic.freq + (r.basic.freq==="その他"&&r.basic.freqOther?"("+r.basic.freqOther+")":"")];
+      for(let i=0;i<simACount;i++){
+        const d = (r.simA && r.simA[i]) ? r.simA[i] : {emotions:[],action:"",actionFree:""};
+        row.push(d.emotions.join("/"), d.action + (d.actionFree? "("+d.actionFree+")":""));
+      }
+      row.push(
+        r.simB.emotions.join("/"), r.simB.action + (r.simB.actionFree? "("+r.simB.actionFree+")":""),
+        r.interview.concern, r.interview.habits.join("/"), r.interview.free
+      );
+      lines.push(row.map(esc).join(","));
+    });
+    return lines.join("\r\n");
+  }
+
+  function downloadCsv(){
+    const csv = "\uFEFF" + toCsv(adminData);
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = "harassment_survey_responses.csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------- helpers ----------
+  function escapeHtml(s){ return (s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+  function escapeAttr(s){ return escapeHtml(s); }
+
+  async function submitResponse() {
+  const payload = {
+    timestamp: new Date().toISOString(),
+    basic: state.basic,
+    simA: state.simA,
+    simB: state.simB,
+    interview: state.interview
+  };
+
+  try {
+    const response = await fetch(
+      "https://script.google.com/macros/s/AKfycbwVzONAGxBu3Nuh9lTLpVpRlh-_M_BF4e8e-ZFr4m7C-YTpz-wu6NzmRABE4C7hTm97/exec",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const result = await response.json();
+
+    if (result.result === "success") {
+      return true;
+    } else {
+      toast("送信に失敗しました。");
+      return false;
+    }
+
+  } catch (error) {
+    console.error(error);
+    toast("通信エラーが発生しました。");
+    return false;
+  }
+}
+
+  // ---------- event handling ----------
+  function attachHandlers(){
+    root.querySelectorAll('[data-action="start"]').forEach(el=>el.onclick=()=>{ if(!state.consent) return; state.step=0; render(); });
+    root.querySelectorAll('[data-consent-checkbox]').forEach(el=>el.onchange=()=>{ state.consent = el.checked; render(); });
+    root.querySelectorAll('[data-action="admin-open"]').forEach(el=>el.onclick=()=>{ state.admin=true; adminData=null; render(); });
+    root.querySelectorAll('[data-action="admin-close"]').forEach(el=>el.onclick=()=>{ state.admin=false; render(); });
+    root.querySelectorAll('[data-action="admin-refresh"]').forEach(el=>el.onclick=()=>{ adminData=null; render(); });
+    root.querySelectorAll('[data-action="admin-csv"]').forEach(el=>el.onclick=()=>downloadCsv());
+
+    root.querySelectorAll('[data-action="restart"]').forEach(el=>el.onclick=()=>{
+      state = { step:-1, admin:false, consent:false, simAIndex:0, revealed:{},
+        basic:{gender:"",age:"",sns:[],freq:"",freqOther:""},
+        simA:[{emotions:[],action:"",actionFree:""},{emotions:[],action:"",actionFree:""},{emotions:[],action:"",actionFree:""}],
+        simB:{emotions:[],action:"",actionFree:""},
+        interview:{concern:0,habits:[],free:""} };
+      render();
+    });
+
+    root.querySelectorAll('[data-radio]').forEach(el=>el.onclick=()=>{
+      const field = el.getAttribute('data-radio');
+      const val = el.getAttribute('data-val');
+      if(field==="gender"||field==="freq"){ state.basic[field]=val; }
+      else if(field==="simA-action"){ state.simA[state.simAIndex].action = val; if(val!=="その他") state.simA[state.simAIndex].actionFree=""; }
+      else if(field==="simB-action"){ state.simB.action = val; if(val!=="その他") state.simB.actionFree=""; }
+      render();
+    });
+
+    root.querySelectorAll('[data-toggle]').forEach(el=>el.onclick=()=>{
+      const field = el.getAttribute('data-toggle');
+      const val = el.getAttribute('data-val');
+      if(field==="sns") toggleInArray(state.basic.sns, val);
+      else if(field==="simA-emo") toggleInArray(state.simA[state.simAIndex].emotions, val);
+      else if(field==="simB-emo") toggleInArray(state.simB.emotions, val);
+      else if(field==="habits") toggleInArray(state.interview.habits, val);
+      render();
+    });
+
+    root.querySelectorAll('[data-scale]').forEach(el=>el.onclick=()=>{
+      state.interview.concern = parseInt(el.getAttribute('data-scale'),10);
+      render();
+    });
+
+    root.querySelectorAll('[data-reveal]').forEach(el=>el.onclick=()=>{
+      state.revealed[el.getAttribute('data-reveal')] = true;
+      render();
+    });
+
+    root.querySelectorAll('[data-text]').forEach(el=>{
+      el.oninput = ()=>{
+        const field = el.getAttribute('data-text');
+        if(field==="age") state.basic.age = el.value;
+        else if(field==="freqOther") state.basic.freqOther = el.value;
+        else if(field==="simA-actionFree") state.simA[state.simAIndex].actionFree = el.value;
+        else if(field==="simB-actionFree") state.simB.actionFree = el.value;
+        else if(field==="free") state.interview.free = el.value;
+        // don't re-render on every keystroke (would lose focus) — just update disabled state of next btn
+        const nextBtn = root.querySelector('[data-action="next"]');
+        if(nextBtn){
+          let ok = true;
+          if(state.step===0) ok = basicValid();
+          else if(state.step===1) ok = simAValid(state.simAIndex);
+          else if(state.step===2) ok = simBValid();
+          nextBtn.disabled = !ok;
+        }
+      };
+    });
+
+    root.querySelectorAll('[data-action="back"]').forEach(el=>el.onclick=()=>{
+      if(state.step===0){ state.step=-1; }
+      else if(state.step===1){
+        if(state.simAIndex>0){ state.simAIndex--; }
+        else { state.step=0; }
+      }
+      else if(state.step===2){ state.simAIndex=SIM_A.length-1; state.step=1; }
+      else { state.step--; }
+      render();
+    });
+
+    root.querySelectorAll('[data-action="next"]').forEach(el=>el.onclick=()=>{
+      if(state.step===1){
+        if(state.simAIndex < SIM_A.length-1){ state.simAIndex++; render(); return; }
+        state.step=2; render(); return;
+      }
+      state.step++; render();
+    });
+
+    root.querySelectorAll('[data-action="submit"]').forEach(el=>el.onclick=async ()=>{
+      el.disabled = true; el.textContent = "送信中…";
+      const ok = await submitResponse();
+      if(ok){ state.step=5; render(); }
+      else { el.disabled=false; el.textContent="回答を送信する"; }
+    });
+  }
+
+  render();
+})();
+</script>
